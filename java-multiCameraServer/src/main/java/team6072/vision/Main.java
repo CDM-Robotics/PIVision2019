@@ -26,6 +26,8 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.vision.VisionThread;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 
 import org.opencv.core.Mat;
 
@@ -70,6 +72,8 @@ public final class Main {
     public static int team;
     public static boolean server;
     public static List<CameraConfig> cameraConfigs = new ArrayList<>();
+    public static NetworkTableInstance mTableInstance;
+    public static NetworkTable mTbl;
 
     // private constructor
     private Main() {
@@ -83,20 +87,21 @@ public final class Main {
             CONFIGFILE = args[0];
         }
 
+        // start NetworkTables
+        NetworkTableInstance mTableInstance = NetworkTableInstance.getDefault();
+        NetworkTable mTbl = mTableInstance.getTable("vision");
         // read configuration
         if (!readConfig()) {
             return;
         }
 
-        // start NetworkTables
-        NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
-        // if (server) {
+        if (server) {
             System.out.println("Setting up NetworkTables server");
-            ntinst.startServer();
-        // } else {
-        //     System.out.println("Setting up NetworkTables client for team " + team);
-        //     ntinst.startClientTeam(team);
-        // }
+            mTableInstance.startServer();
+        } else {
+            System.out.println("Setting up NetworkTables client for team " + team);
+            mTableInstance.startClientTeam(team);
+        }
 
         // start cameras
         List<VideoSource> cameras = new ArrayList<>();
@@ -106,13 +111,14 @@ public final class Main {
 
         // start image processing on camera 0 if present
         System.out.println("Camera Number = " + cameras.size());
-        if (cameras.size() >= 1) {
-            VisionThread visionThread = new VisionThread(cameras.get(0), new CloseUpPipeline(),
-                    new CloseUpPipelineListener());
+
+        for(int i = 0; i < cameras.size(); i++){
+            VisionThread visionThread = new VisionThread(cameras.get(i), new CloseUpPipeline(),
+            new CloseUpPipelineListener());
             visionThread.start();
         }
 
-        // loop forever
+        // loop forever 
         for (;;) {
             try {
                 Thread.sleep(10000);
@@ -154,13 +160,14 @@ public final class Main {
         // ntmode (optional)
         if (obj.has("ntmode")) {
             String str = obj.get("ntmode").getAsString();
-            if ("client".equalsIgnoreCase(str)) {
-                server = false;
-            } else if ("server".equalsIgnoreCase(str)) {
-                server = true;
-            } else {
-                parseError("could not understand ntmode value '" + str + "'");
-            }
+            // if ("client".equalsIgnoreCase(str)) {
+            //     server = false;
+            // } else if ("server".equalsIgnoreCase(str)) {
+            //     server = true;
+            // } else {
+            //     parseError("could not understand ntmode value '" + str + "'");
+            // }
+            server = false;
         }
 
         // cameras
@@ -198,7 +205,7 @@ public final class Main {
             return false;
         }
         cam.name = nameElement.getAsString();
-
+        
         // path
         JsonElement pathElement = config.get("path");
         if (pathElement == null) {

@@ -64,8 +64,10 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
         mTbl = tblInst.getTable("vision");
         // Instantiate Camera Server Stuff
         mCameraServer = CameraServer.getInstance();
+        HSVThresholdOutput mHsvThresOut = HSVThresholdOutput.getInstance();
+        System.out.println(mHsvThresOut.getHSVName());
         // output HSVThreshold output to the camera server on Shuffleboard
-        mHVSThresholdOutput = mCameraServer.putVideo("mHVSThresholdOutput", 320, 240);
+        mHVSThresholdOutput = mCameraServer.putVideo(mHsvThresOut.getHSVName(), 320, 240);
         mRectanglesOutput = mCameraServer.putVideo("mRectanglesOutput", 320, 240);
     }
 
@@ -98,45 +100,45 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             // Pipeline work and Camera Server processing
             // hsv output
             outputColorFilters(pipeline);
-            // rectangles output
-            ArrayList<MatOfPoint> mats = pipeline.findContoursOutput();
-            ArrayList<RotatedRect> rotatedRects = new ArrayList<RotatedRect>();
-            // Network Tables Stuff
-            mTbl.getEntry("PIKey").setString("Call: " + mCounter);
-            if (mats.size() != -1) {
-                for (int i = 0; i < mats.size(); i++) {
-                    RotatedRect rect = Imgproc.minAreaRect(new MatOfPoint2f(mats.get(i).toArray()));
-                    rotatedRects.add(rect);
-                }
 
-                rotatedRects = orderFilterRectangles(rotatedRects);
+            // vvvv
+            // // rectangles output
+            // ArrayList<MatOfPoint> mats = pipeline.findContoursOutput();
+            // ArrayList<RotatedRect> rotatedRects = new ArrayList<RotatedRect>();
+            // // Network Tables Stuff
+            // mTbl.getEntry("PIKey").setString("Call: " + mCounter);
+            // if (mats.size() != -1) {
+            //     for (int i = 0; i < mats.size(); i++) {
+            //         RotatedRect rect = Imgproc.minAreaRect(new MatOfPoint2f(mats.get(i).toArray()));
+            //         rotatedRects.add(rect);
+            //     }
 
-                for (int i = 0; i < Math.min(2, rotatedRects.size()); i++) {
-                    RotatedRect rect = rotatedRects.get(i);
+            //     // rotatedRects = orderFilterRectangles(rotatedRects);
 
-                    Point center = rect.center;
-                    double angle = rect.angle;
-                    Size size = rect.size;
+            //     for (int i = 0; i < Math.min(2, rotatedRects.size()); i++) {
+            //         RotatedRect rect = rotatedRects.get(i);
 
-                    mTbl.getEntry("Rect " + i + " center X").setString("x = " + center.x);
-                    mTbl.getEntry("Rect " + i + " center Y").setString("y = " + center.y);
-                    mTbl.getEntry("Rect " + i + " angle").setDouble(angle);
-                    mTbl.getEntry("Rect " + i + " Size").setString("Size : " + (size.width * size.height));
-                }
+            //         Point center = rect.center;
+            //         double angle = rect.angle;
+            //         Size size = rect.size;
 
-                if (rotatedRects != null)
-                    System.out.println("Hello");
+            //         mTbl.getEntry("Rect " + i + " center X").setString("x = " + center.x);
+            //         mTbl.getEntry("Rect " + i + " center Y").setString("y = " + center.y);
+            //         mTbl.getEntry("Rect " + i + " angle").setDouble(angle);
+            //         mTbl.getEntry("Rect " + i + " Size").setString("Size : " + (size.width * size.height));
+            //     }
 
-                if (rotatedRects != null && rotatedRects.size() >= 2) {
-                    mTbl.getEntry("Distance From Target X").setDouble(getDistanceFromTargetUsingXAxis(rotatedRects));
-                    mTbl.getEntry("Distance From Tape 1 Inches")
-                            .setDouble(getDistanceFromTargetUsingYAxis(rotatedRects.get(0)));
-                    mTbl.getEntry("Distance From Tape 2 Inches")
-                            .setDouble(getDistanceFromTargetUsingYAxis(rotatedRects.get(1)));
-                }
-            }
-            mCounter++;
-            m_inCopyPipeline = false;
+            //     if (rotatedRects != null && rotatedRects.size() >= 2) {
+            //         mTbl.getEntry("Distance From Target X").setDouble(getDistanceFromTargetUsingXAxis(rotatedRects));
+            //         mTbl.getEntry("Center of mass X").setDouble(getCenterOfMassX(rotatedRects));
+            //         // mTbl.getEntry("Distance From Tape 1 Inches")
+            //         //         .setDouble(getDistanceFromTargetUsingYAxis(rotatedRects.get(0)));
+            //         // mTbl.getEntry("Distance From Tape 2 Inches")
+            //         //         .setDouble(getDistanceFromTargetUsingYAxis(rotatedRects.get(1)));
+            //     }
+            // }
+            // mCounter++;
+            // m_inCopyPipeline = false;
         }
     }
 
@@ -216,22 +218,27 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     private double getDistanceFromTargetUsingXAxis(ArrayList<RotatedRect> rotatedRects) {
 
         // Calculate the center of mass of the tape
-        double mass1 = rotatedRects.get(0).size.height * rotatedRects.get(0).size.width;
-        double mass2 = rotatedRects.get(1).size.height * rotatedRects.get(1).size.width;
-
-        double massCenterXpx = centerOfMass(mass1, mass2, rotatedRects.get(0).center.x, rotatedRects.get(1).center.x);
-        double massCenterYpx = centerOfMass(mass1, mass2, rotatedRects.get(0).center.y, rotatedRects.get(1).center.y);
-
+        double massCenterXpx = getCenterOfMassX(rotatedRects);
         // Calculate the distance from the target X horizontally
         double tapeDistFromCenterPxX = abs(rotatedRects.get(0).center.x - massCenterXpx);
         double halfOfCameraPixelWidthInches = (TAPE_DIST_FROM_CENTER_INCHES_X / tapeDistFromCenterPxX)
                 * (CAMERA_PIXEL_WIDTH_PIXELS / 2);
         double distanceFromTargetX = halfOfCameraPixelWidthInches / (java.lang.Math.tan(CAMERA_FOV_ANGLE_X / 2));
 
-        mTbl.getEntry("Center Of Mass X").setDouble(massCenterXpx);
-        mTbl.getEntry("Center Of Mass Y").setDouble(massCenterYpx);
-
         return distanceFromTargetX;
+    }
+
+    /**
+     * gives you the center of mass of the x Axis in pixel length
+     * @param rotatedRects
+     * @return
+     */
+    private double getCenterOfMassX(ArrayList<RotatedRect> rotatedRects){
+        double mass1 = rotatedRects.get(0).size.height * rotatedRects.get(0).size.width;
+        double mass2 = rotatedRects.get(1).size.height * rotatedRects.get(1).size.width;
+    
+        double massCenterXpx = centerOfMass(mass1, mass2, rotatedRects.get(0).center.x, rotatedRects.get(1).center.x);
+        return massCenterXpx;
     }
 
     /**
