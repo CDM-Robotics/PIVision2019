@@ -113,7 +113,7 @@ public final class Main {
         System.out.println("Camera Number = " + cameras.size());
 
         for(int i = 0; i < cameras.size(); i++){
-            VisionThread visionThread = new VisionThread(cameras.get(i), new CloseUpPipeline(),
+            VisionThread visionThread = new VisionThread(cameras.get(0), new CloseUpPipeline(),
             new CloseUpPipelineListener());
             visionThread.start();
         }
