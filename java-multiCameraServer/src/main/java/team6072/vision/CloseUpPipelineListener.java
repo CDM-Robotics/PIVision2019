@@ -116,6 +116,10 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             }
             mCounter++;
             m_inCopyPipeline = false;
+            
+        Timestamper.getInstance().recordTime();
+        
+		System.out.printf("TotalPiRtime : %d",Timestamper.getInstance().getRunTime());
         }
     }
 

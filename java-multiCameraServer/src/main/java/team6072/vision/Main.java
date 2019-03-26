@@ -111,6 +111,8 @@ public final class Main {
 
         // start image processing on camera 0 if present
         System.out.println("Camera Number = " + cameras.size());
+        Timestamper.getInstance();
+        
 
         for(int i = 0; i < cameras.size(); i++){
             VisionThread visionThread = new VisionThread(cameras.get(0), new CloseUpPipeline(),
