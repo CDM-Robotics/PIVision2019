@@ -40,7 +40,7 @@ public class CloseUpPipeline implements VisionPipeline {
 	 */
 	@Override	public void process(Mat source0) {
 
-		Timestamper.getInstance().recordTime();
+		Timestamper.getInstance().recordTime1();
 		// Step CV_resize0:
 		Mat cvResizeSrc = source0;
 		Size cvResizeDsize = new Size(0, 0);

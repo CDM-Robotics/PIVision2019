@@ -22,11 +22,15 @@ public class Timestamper {
         return mTimestamper;
     }
 
-    public void recordTime() {
+    public void recordTime1() {
         if (mTimeStamp == TimeStamp.Time1) {
             mT1 = System.currentTimeMillis();
             mTimeStamp = TimeStamp.Time2;
-        } else {
+        }
+    }
+
+    public void recordTime2() {
+        if (mTimeStamp == TimeStamp.Time2) {
             mT2 = System.currentTimeMillis();
             mTimeStamp = TimeStamp.Time1;
         }
@@ -36,7 +40,7 @@ public class Timestamper {
         if (mTimeStamp == TimeStamp.Time1) {
             return (mT2 - mT1);
         } else {
-            System.out.println("ERROR: Invalid Timestamp - You switched the recordTime()'s dummy!");
+            System.out.println("ERROR: Invalid Timestamp - You got the order wrong somehow!");
             return -1;
         }
     }
