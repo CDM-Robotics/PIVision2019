@@ -59,6 +59,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     private int mCounter;
 
     public CloseUpPipelineListener() {
+        
         // instantiate Network Tables
         NetworkTableInstance tblInst = NetworkTableInstance.getDefault();
         mTbl = tblInst.getTable(NetTblConfig.T_VISION);
