@@ -122,11 +122,7 @@ public final class Main {
 
         // loop forever 
         for (;;) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException ex) {
-                return;
-            }
+            CameraMaster.getInstance().updateNetworkTables();
         }
     }
 

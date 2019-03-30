@@ -35,10 +35,12 @@ public class CameraMaster {
     }
 
     public void updateNetworkTables() {
-        double yDispInches = getYDisplacement();
-        double xDispInches = getXDisplacement();
-        mYDist.setDouble(yDispInches);
-        mXDist.setDouble(xDispInches);
+        if(cameraDatas.size() == 2){
+            double yDispInches = getYDisplacement();
+            double xDispInches = getXDisplacement();
+            mYDist.setDouble(yDispInches);
+            mXDist.setDouble(xDispInches);
+        }
     }
 
     private double getXDisplacement() {

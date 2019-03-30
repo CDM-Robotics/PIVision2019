@@ -109,7 +109,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
                     double xDistFromCenter = getDistFromCenterInches(rotatedRects);
                     double yDistInches = getDistanceFromTargetInches(rotatedRects);
                     mCameraData.updateJson(xDistFromCenter, yDistInches);
-
                     // mTbl.getEntry("Center of mass
                     // X(px)").setDouble(getCenterOfMassX(rotatedRects));
                     // mTbl.getEntry("Distance From Tape 1 Inches")
