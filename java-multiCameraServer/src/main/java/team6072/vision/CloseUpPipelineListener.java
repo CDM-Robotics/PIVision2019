@@ -53,13 +53,15 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     private CameraServer mCameraServer;
     private CvSource mHVSThresholdOutput;
     private CvSource mRectanglesOutput;
+    private CameraData mCameraData;
 
     // Counters
     private int mCallCounter = 0;
     private int mCounter;
 
     public CloseUpPipelineListener() {
-        
+        //instantiate CameraData shell
+        mCameraData = new CameraData();
         // instantiate Network Tables
         NetworkTableInstance tblInst = NetworkTableInstance.getDefault();
         mTbl = tblInst.getTable(NetTblConfig.T_VISION);
@@ -104,8 +106,9 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
                 // logRectangles(rotatedRects);
 
                 if (rotatedRects != null && rotatedRects.size() >= 2) {
-                    mTbl.getEntry(NetTblConfig.KV_Y_DIST).setDouble(getDistanceFromTargetInches(rotatedRects));
-                    mTbl.getEntry("Num of Rectangles").setDouble(rotatedRects.size());
+                    double xDistFromCenter = getDistFromCenterInches(rotatedRects);
+                    double yDistInches = getDistanceFromTargetInches(rotatedRects);
+                    mCameraData.updateJson(xDistFromCenter, yDistInches);
 
                     // mTbl.getEntry("Center of mass
                     // X(px)").setDouble(getCenterOfMassX(rotatedRects));
@@ -295,7 +298,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
      * account vertical distortion
      * 
      * @param rotatedRects - the Array list of ordered Rotated Rectanlges
-     * @return - returns the distance inbetween the camera and the target
+     * @return - returns the distance inbetween the camera and the target in inches
      */
     private double getDistanceFromTargetInches(ArrayList<RotatedRect> rotatedRects) {
 
@@ -316,6 +319,14 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
 
+    private double getDistFromCenterInches(ArrayList<RotatedRect> rotatedRects){
+        int center = CAMERA_PIXEL_WIDTH / 2;
+        int targetCenter = (int)((rotatedRects.get(0).center.x + rotatedRects.get(1).center.x) / 2);
+        int distplacementX = center - targetCenter;
+        double ratio = getRatioPxToInches(rotatedRects);
+
+        return (distplacementX * ratio);
+    }
     
     
 }
