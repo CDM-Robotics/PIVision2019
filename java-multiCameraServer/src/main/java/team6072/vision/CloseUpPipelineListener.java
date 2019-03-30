@@ -93,8 +93,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             ArrayList<MatOfPoint> mats = pipeline.findContoursOutput();
             ArrayList<RotatedRect> rotatedRects = new ArrayList<RotatedRect>();
 
-            // orders the rectangles
-            rotatedRects = orderFilterRectangles(rotatedRects);
 
             // Send real information
             if (mats.size() != -1) {
@@ -103,6 +101,8 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
                     rotatedRects.add(rect);
                 }
 
+                // orders the rectangles
+                rotatedRects = orderFilterRectangles(rotatedRects);
                 // logRectangles(rotatedRects);
 
                 if (rotatedRects != null && rotatedRects.size() >= 2) {
@@ -122,7 +122,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
 
             Timestamper.getInstance().recordTime2();
 
-            System.out.printf("TotalPiRtime : %d /n", Timestamper.getInstance().getRunTime());
+            System.out.printf("TotalPiRtime : %d \n", Timestamper.getInstance().getRunTime());
         }
     }
 
