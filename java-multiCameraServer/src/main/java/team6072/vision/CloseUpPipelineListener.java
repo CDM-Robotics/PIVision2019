@@ -60,7 +60,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     private int mCounter;
 
     public CloseUpPipelineListener() {
-        //instantiate CameraData shell
+        // instantiate CameraData shell
         mCameraData = new CameraData();
         // instantiate Network Tables
         NetworkTableInstance tblInst = NetworkTableInstance.getDefault();
@@ -94,7 +94,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             ArrayList<RotatedRect> rotatedRects = new ArrayList<RotatedRect>();
 
             // orders the rectangles
-            // rotatedRects = orderFilterRectangles(rotatedRects);
+            rotatedRects = orderFilterRectangles(rotatedRects);
 
             // Send real information
             if (mats.size() != -1) {
@@ -119,10 +119,10 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             }
             mCounter++;
             m_inCopyPipeline = false;
-            
-        Timestamper.getInstance().recordTime2();
-        
-		System.out.printf("TotalPiRtime : %d",Timestamper.getInstance().getRunTime());
+
+            Timestamper.getInstance().recordTime2();
+
+            System.out.printf("TotalPiRtime : %d /n", Timestamper.getInstance().getRunTime());
         }
     }
 
@@ -141,12 +141,11 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
         }
     }
 
-
-
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
-    //  -------------------------- Unique Camera outputs--------------------------------------
+    // -------------------------- Unique Camera
+    // outputs--------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
@@ -162,19 +161,14 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
 
     private boolean m_inCopyPipeline = false;
 
-
-
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
-    // ----------------------------------Ordering the filtered in Rectangles------------------
+    // ----------------------------------Ordering the filtered in
+    // Rectangles------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
-    private class RectDistance {
-        public double distance;
-        public RotatedRect rect;
-    }
 
     /**
      * Returns the same array list of 2 RotatedRectangles but ordered from left to
@@ -187,37 +181,22 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
      */
     private ArrayList<RotatedRect> orderFilterRectangles(ArrayList<RotatedRect> rotatedRects) {
         if (rotatedRects.size() >= 2) {
+            ArrayList<RotatedRect> tempRotatedRects = new ArrayList<RotatedRect>();
 
-
-            // ArrayList<RectDistance> map = new ArrayList<RectDistance>(rotatedRects.size());
-            // for (RotatedRect curRect : rotatedRects) {
-            //     double distFromCenterR1 = abs(curRect.center.x - (CAMERA_PIXEL_WIDTH / 2));
-            //     RectDistance curRectDistance = new RectDistance();
-            //     curRectDistance.distance = distFromCenterR1;
-            //     curRectDistance.rect = curRect;
-
-            //     if (map.size() == 0) {
-            //         map.add(curRectDistance);
-            //     }
-            //     for (int i = 0; i < map.size(); i++) {ss
-            //         RectDistance mapRectDistance = map.get(i);
-            //         if (curRectDistance.distance < mapRectDistance.distance) {
-            //             map.add(i, curRectDistance);
-            //         }
-            //     }
-            // }
-
-            // RectDistance list0 = map.get(0);
-            // RectDistance list1 = map.get(1);
-
-            // if (list0.rect.center.x > list1.rect.center.x) {
-            //     rotatedRects.set(0, list1.rect);
-            //     rotatedRects.set(1, list0.rect);
-            // } else {
-            //     rotatedRects.set(0, list0.rect);
-            //     rotatedRects.set(1, list1.rect);
-            // }
-            // return rotatedRects;
+            RotatedRect rect1 = rotatedRects.get(0);
+            RotatedRect rect2 = rotatedRects.get(1);
+            for (int i = 0; i < rotatedRects.size(); i++) {
+                RotatedRect tempRect = rotatedRects.get(i);
+                if (tempRect.size.area() > rect1.size.area()) {
+                    rect2 = rect1;
+                    rect1 = tempRect;
+                } else if (tempRect.size.area() > rect2.size.area()) {
+                    rect2 = tempRect;
+                }
+            }
+            tempRotatedRects.add(rect1);
+            tempRotatedRects.add(rect2);
+            return tempRotatedRects;
         }
         return null;
     }
@@ -229,34 +208,15 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
         return num;
     }
 
-    
-    /**
-     * 
-     * @param rect  - the desired rotated rectangle
-     * @param angle - the angle the rectangle is tilted at
-     * @return
-     */
-    private double findHeight(RotatedRect rect) {
-        if ((rect.size.height) > (rect.size.width)) {
-            return rect.size.height;
-        } else {
-            return rect.size.width;
-        }
-    }
-
-
-
-
-    
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
-    // ----------------------------------Finding the Distance from Target (Y) ----------------
+    // ----------------------------------Finding the Distance from Target (Y)
+    // ----------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
 
-    
     /**
      * gives you the center of mass of the x Axis in pixel length
      * 
@@ -304,28 +264,28 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
         // calculate the ratio from pixels to inches
         double ratio = getRatioPxToInches(rotatedRects);
         // Calculate the distance from the target X horizontally
-        double distanceFromTargetInches = (ratio * (CAMERA_PIXEL_WIDTH / 2)) / (java.lang.Math.tan(CAMERA_FOV_ANGLE_X / 2));
+        double distanceFromTargetInches = (ratio * (CAMERA_PIXEL_WIDTH / 2))
+                / (java.lang.Math.tan(CAMERA_FOV_ANGLE_X / 2));
 
         return distanceFromTargetInches;
     }
 
+    // ---------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
+    // ----------------------------------Finding the Distance from Target
+    // (X)-----------------
+    // ---------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------
 
-    // ---------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------
-    // ----------------------------------Finding the Distance from Target (X)-----------------
-    // ---------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------
-    // ---------------------------------------------------------------------------------------
-
-    private double getDistFromCenterInches(ArrayList<RotatedRect> rotatedRects){
+    private double getDistFromCenterInches(ArrayList<RotatedRect> rotatedRects) {
         int center = CAMERA_PIXEL_WIDTH / 2;
-        int targetCenter = (int)((rotatedRects.get(0).center.x + rotatedRects.get(1).center.x) / 2);
+        int targetCenter = (int) ((rotatedRects.get(0).center.x + rotatedRects.get(1).center.x) / 2);
         int distplacementX = center - targetCenter;
         double ratio = getRatioPxToInches(rotatedRects);
 
         return (distplacementX * ratio);
     }
-    
-    
+
 }
