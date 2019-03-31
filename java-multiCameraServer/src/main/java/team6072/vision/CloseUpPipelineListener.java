@@ -119,20 +119,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
         }
     }
 
-    private void logRectangles(ArrayList<RotatedRect> rotatedRects) {
-        for (int i = 0; i < Math.min(2, rotatedRects.size()); i++) {
-            RotatedRect rect = rotatedRects.get(i);
-
-            Point center = rect.center;
-            double angle = rect.angle;
-            Size size = rect.size;
-
-            mTbl.getEntry("Rect " + i + " center X").setString("x = " + center.x);
-            mTbl.getEntry("Rect " + i + " center Y").setString("y = " + center.y);
-            mTbl.getEntry("Rect " + i + " angle").setDouble(angle);
-            mTbl.getEntry("Rect " + i + " Size").setString("Size : " + (size.width * size.height));
-        }
-    }
 
     // ---------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------
