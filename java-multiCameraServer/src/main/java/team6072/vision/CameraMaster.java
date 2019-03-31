@@ -14,6 +14,7 @@ public class CameraMaster {
     private static ArrayList<CameraData> cameraDatas;
     private static NetworkTableEntry mXDist;
     private static NetworkTableEntry mYDist;
+    private static NetworkTableEntry mHaveTarget;
 
     private CameraMaster() {
         cameraDatas = new ArrayList<CameraData>();
@@ -21,6 +22,7 @@ public class CameraMaster {
         NetworkTable table = mNetworkInstance.getTable(NetTblConfig.T_VISION);
         mXDist = table.getEntry(NetTblConfig.KV_X_DIST);
         mYDist = table.getEntry(NetTblConfig.KV_Y_DIST);
+        mHaveTarget = table.getEntry(NetTblConfig.KV_HAVE_TARGET);
     }
 
     public static CameraMaster getInstance() {
@@ -35,11 +37,21 @@ public class CameraMaster {
     }
 
     public void updateNetworkTables() {
-        if(cameraDatas.size() == 2){
+        if (cameraDatas.size() == 2) {
             double yDispInches = getYDisplacement();
             double xDispInches = getXDisplacement();
+            boolean haveTarget = isHaveTarget();
             mYDist.setDouble(yDispInches);
             mXDist.setDouble(xDispInches);
+            mHaveTarget.setBoolean(haveTarget);
+        }
+    }
+
+    private boolean isHaveTarget() {
+        if (cameraDatas.get(0).isHaveTarget() && cameraDatas.get(1).isHaveTarget()) {
+            return true;
+        } else {
+            return false;
         }
     }
 

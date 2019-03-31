@@ -34,10 +34,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
 
     // Network Table Entrys
     private NetworkTable mTbl;
-    private NetworkTableEntry mX1;
-    private NetworkTableEntry mY1;
-    private NetworkTableEntry mX2;
-    private NetworkTableEntry mY2;
 
     private final double DIST_BETWEEN_TAPE_INCHES = (5.65572 * 2);
     private final double TAPE_HEIGHT_IN_INCHES = 5.825352102;
@@ -53,6 +49,8 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     private CameraServer mCameraServer;
     private CvSource mHVSThresholdOutput;
     private CvSource mRectanglesOutput;
+
+    // CameraData
     private CameraData mCameraData;
 
     // Counters
@@ -93,7 +91,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             ArrayList<MatOfPoint> mats = pipeline.findContoursOutput();
             ArrayList<RotatedRect> rotatedRects = new ArrayList<RotatedRect>();
 
-
             // Send real information
             if (mats.size() != -1) {
                 for (int i = 0; i < mats.size(); i++) {
@@ -101,20 +98,16 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
                     rotatedRects.add(rect);
                 }
 
-                // orders the rectangles
-                rotatedRects = orderFilterRectangles(rotatedRects);
-                // logRectangles(rotatedRects);
-
                 if (rotatedRects != null && rotatedRects.size() >= 2) {
+                    // orders the rectangles
+                    rotatedRects = orderFilterRectangles(rotatedRects);
+
                     double xDistFromCenter = getDistFromCenterInches(rotatedRects);
                     double yDistInches = getDistanceFromTargetInches(rotatedRects);
-                    mCameraData.updateJson(xDistFromCenter, yDistInches);
-                    // mTbl.getEntry("Center of mass
-                    // X(px)").setDouble(getCenterOfMassX(rotatedRects));
-                    // mTbl.getEntry("Distance From Tape 1 Inches")
-                    // .setDouble(getDistanceFromTargetUsingYAxis(rotatedRects.get(0)));
-                    // mTbl.getEntry("Distance From Tape 2 Inches")
-                    // .setDouble(getDistanceFromTargetUsingYAxis(rotatedRects.get(1)));
+                    // Updates CameraData
+                    mCameraData.updateData(xDistFromCenter, yDistInches, true);
+                } else {
+                    mCameraData.updateData(false);
                 }
             }
             mCounter++;

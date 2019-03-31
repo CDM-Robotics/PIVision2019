@@ -89,8 +89,9 @@ public final class Main {
 
         // start NetworkTables
         NetworkTableInstance mTableInstance = NetworkTableInstance.getDefault();
-        NetworkTable mTbl = mTableInstance.getTable("vision");
         // read configuration
+
+        // Change camera configuration!!!!!
         if (!readConfig()) {
             return;
         }

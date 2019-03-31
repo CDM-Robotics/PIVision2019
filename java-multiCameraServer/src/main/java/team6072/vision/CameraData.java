@@ -7,6 +7,7 @@ public class CameraData{
 
     private double mXDistInches;
     private double mYDistInches;
+    private boolean mHaveTarget;
 
     public CameraData(){
         mXDistInches = 0;
@@ -14,9 +15,18 @@ public class CameraData{
         CameraMaster.getInstance().addCameraData(this);
     }
 
-    public void updateJson(double KV_X_DIST, double KV_Y_DIST){
+    public void updateData(double KV_X_DIST, double KV_Y_DIST, boolean HaveVision){
         mXDistInches = KV_X_DIST;
         mYDistInches = KV_Y_DIST;
+        mHaveTarget = HaveVision;
+    }
+
+    public void updateData(boolean HaveTarget){
+        mHaveTarget = HaveTarget;
+    }
+
+    public boolean isHaveTarget(){
+        return mHaveTarget;
     }
 
     public double getKV_X_DIST(){
