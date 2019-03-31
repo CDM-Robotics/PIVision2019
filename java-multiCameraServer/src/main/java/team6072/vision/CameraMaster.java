@@ -15,6 +15,10 @@ public class CameraMaster {
     private static NetworkTableEntry mXDist;
     private static NetworkTableEntry mYDist;
     private static NetworkTableEntry mHaveTarget;
+    private static NetworkTableEntry mTargetAngle;
+    private static NetworkTableEntry mCurrentAngle;
+
+    private final double ERROR_CORRECTION_CONSTANT = 1.2857;
 
     private CameraMaster() {
         cameraDatas = new ArrayList<CameraData>();
@@ -23,6 +27,8 @@ public class CameraMaster {
         mXDist = table.getEntry(NetTblConfig.KV_X_DIST);
         mYDist = table.getEntry(NetTblConfig.KV_Y_DIST);
         mHaveTarget = table.getEntry(NetTblConfig.KV_HAVE_TARGET);
+        mTargetAngle = table.getEntry(NetTblConfig.KV_TARG_YAW);
+        mCurrentAngle = table.getEntry(NetTblConfig.KV_ROBO_YAW);
     }
 
     public static CameraMaster getInstance() {
@@ -56,9 +62,12 @@ public class CameraMaster {
     }
 
     private double getXDisplacement() {
+        double errorAngle = mTargetAngle.getDouble(0) - mCurrentAngle.getDouble(0);
+        double error = errorAngle * ERROR_CORRECTION_CONSTANT;
+        
         double xCam1 = cameraDatas.get(0).getKV_X_DIST();
         double xCam2 = cameraDatas.get(1).getKV_X_DIST();
-        return ((xCam1 + xCam2) / 2);
+        return ((xCam1 + xCam2) / 2) - error;
     }
 
     private double getYDisplacement() {
