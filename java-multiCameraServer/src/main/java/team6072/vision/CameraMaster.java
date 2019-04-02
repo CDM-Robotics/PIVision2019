@@ -15,20 +15,24 @@ public class CameraMaster {
     private static NetworkTableEntry mXDist;
     private static NetworkTableEntry mYDist;
     private static NetworkTableEntry mHaveTarget;
+    private static NetworkTableEntry mBlownUp;
     private static NetworkTableEntry mTargetAngle;
     private static NetworkTableEntry mCurrentAngle;
+    private static NetworkTable mTable;
 
     private final double ERROR_CORRECTION_CONSTANT = 1.2857;
 
     private CameraMaster() {
         cameraDatas = new ArrayList<CameraData>();
         NetworkTableInstance mNetworkInstance = NetworkTableInstance.getDefault();
-        NetworkTable table = mNetworkInstance.getTable(NetTblConfig.T_VISION);
-        mXDist = table.getEntry(NetTblConfig.KV_X_DIST);
-        mYDist = table.getEntry(NetTblConfig.KV_Y_DIST);
-        mHaveTarget = table.getEntry(NetTblConfig.KV_HAVE_TARGET);
-        mTargetAngle = table.getEntry(NetTblConfig.KV_TARG_YAW);
-        mCurrentAngle = table.getEntry(NetTblConfig.KV_ROBO_YAW);
+        mTable = mNetworkInstance.getTable(NetTblConfig.T_VISION);
+        mXDist = mTable.getEntry(NetTblConfig.KV_X_DIST);
+        mYDist = mTable.getEntry(NetTblConfig.KV_Y_DIST);
+        mHaveTarget = mTable.getEntry(NetTblConfig.KV_HAVE_TARGET);
+        mTargetAngle = mTable.getEntry(NetTblConfig.KV_TARG_YAW);
+        mCurrentAngle = mTable.getEntry(NetTblConfig.KV_ROBO_YAW);
+        mBlownUp = mTable.getEntry("NotBlownUp");
+        mBlownUp.setBoolean(true);
     }
 
     public static CameraMaster getInstance() {
@@ -47,6 +51,12 @@ public class CameraMaster {
             double yDispInches = getYDisplacement();
             double xDispInches = getXDisplacement();
             boolean haveTarget = isHaveTarget();
+            if (abs(yDispInches) > 300){
+                mBlownUp.setBoolean(false);
+                haveTarget = false;
+            }else{
+                mBlownUp.setBoolean(true);
+            }
             mYDist.setDouble(yDispInches);
             mXDist.setDouble(xDispInches);
             mHaveTarget.setBoolean(haveTarget);
@@ -64,17 +74,33 @@ public class CameraMaster {
     private double getXDisplacement() {
         double errorAngle = mTargetAngle.getDouble(0) - mCurrentAngle.getDouble(0);
         double error = errorAngle * ERROR_CORRECTION_CONSTANT;
+        mTable.getEntry("Error Angle").setDouble(errorAngle);
+        mTable.getEntry("Error").setDouble(error);
 
-        double xCam1 = cameraDatas.get(0).getKV_X_DIST();
-        double xCam2 = cameraDatas.get(1).getKV_X_DIST();
-        // System.out.printf("Cam.errAng : %.3f , Cam.errComp : %.3f \n", errorAngle, error);
-        return ((xCam1 + xCam2) / 2) - error;
+        double xCam0 = cameraDatas.get(0).getKV_X_DIST();
+        double xCam1 = cameraDatas.get(1).getKV_X_DIST();
+        
+        mTable.getEntry("xCam0 KV_X_DIST").setDouble(xCam0);
+        mTable.getEntry("xCam1 KV_X_DIST").setDouble(xCam1);
+        // System.out.printf("Cam.errAng : %.3f , Cam.errComp : %.3f \n", errorAngle,
+        // error);
+        return ((xCam0 + xCam1) / 2) - error;
     }
 
     private double getYDisplacement() {
-        double yCam1 = cameraDatas.get(0).getKV_Y_DIST();
-        double yCam2 = cameraDatas.get(1).getKV_Y_DIST();
-        return ((yCam1 + yCam2) / 2);
+        double yCam0 = cameraDatas.get(0).getKV_Y_DIST();
+        double yCam1 = cameraDatas.get(1).getKV_Y_DIST();
+        
+        mTable.getEntry("yCam0 KV_X_DIST").setDouble(yCam0);
+        mTable.getEntry("yCam1 KV_X_DIST").setDouble(yCam1);
+        return ((yCam0 + yCam1) / 2);
+    }
+
+    private double abs(double num) {
+        if (num < 0) {
+            num = num * -1;
+        }
+        return num;
     }
 
 }

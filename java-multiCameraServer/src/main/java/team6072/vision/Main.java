@@ -13,6 +13,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -74,6 +79,10 @@ public final class Main {
     public static List<CameraConfig> cameraConfigs = new ArrayList<>();
     public static NetworkTableInstance mTableInstance;
     public static NetworkTable mTbl;
+    public static ScheduledExecutorService mScheduler;
+
+    
+    protected static UpdateCameraMaster updateCameraMaster;
 
     // private constructor
     private Main() {
@@ -121,8 +130,15 @@ public final class Main {
             visionThread.start();
         }
 
-        // loop forever 
-        for (;;) {
+        updateCameraMaster = new UpdateCameraMaster();
+        mScheduler = Executors.newScheduledThreadPool(1);
+        mScheduler.scheduleWithFixedDelay(updateCameraMaster, 30, 30, TimeUnit.MILLISECONDS);
+    }
+
+    
+    protected static class UpdateCameraMaster implements Runnable {
+        @Override
+        public void run(){
             CameraMaster.getInstance().updateNetworkTables();
         }
     }
@@ -231,3 +247,4 @@ public final class Main {
     }
 
 }
+
