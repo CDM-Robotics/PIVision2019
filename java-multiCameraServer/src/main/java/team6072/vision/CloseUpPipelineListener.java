@@ -26,6 +26,7 @@ import java.util.SortedMap;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 
+
 public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPipeline> {
 
     // The object to synchronize on to make sure the vision thread doesn't
@@ -57,7 +58,10 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     private int mCallCounter = 0;
     private int mCounter;
 
-    public CloseUpPipelineListener() {
+    private String mId;
+
+    public CloseUpPipelineListener(String id) {
+        mId = id;
         // instantiate CameraData shell
         mCameraData = new CameraData();
         // instantiate Network Tables
@@ -78,13 +82,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
     @Override
     public void copyPipelineOutputs(CloseUpPipeline pipeline) {
         synchronized (visionLock) {
-            // Makes sure that the pipeline doesn't trip on itself if processing time is too
-            // slow
-            if (m_inCopyPipeline) {
-                return;
-            }
-            m_inCopyPipeline = true;
-            mCallCounter++;
             // HSV output
             outputColorFilters(pipeline);
 
@@ -107,15 +104,11 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
                     // Updates CameraData
                     mCameraData.updateData(xDistFromCenter, yDistInches, true);
                 } else {
-                    mCameraData.updateData(false);
+                    mCameraData.setHaveTarget(false);
                 }
             }
-            mCounter++;
-            m_inCopyPipeline = false;
-
-            Timestamper.getInstance().recordTime2();
-
-            System.out.printf("TotalPiRtime : %d \n", Timestamper.getInstance().getRunTime());
+            // Timestamper.getInstance().recordTime2();
+            //System.out.printf("TotalPiRtime : %d \n", Timestamper.getInstance().getRunTime());
         }
     }
 
@@ -202,20 +195,23 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
      * @param rotatedRects
      * @return
      */
-    private double getCenterOfMassX(ArrayList<RotatedRect> rotatedRects) {
-        double mass1 = rotatedRects.get(0).size.height * rotatedRects.get(0).size.width;
-        double mass2 = rotatedRects.get(1).size.height * rotatedRects.get(1).size.width;
+    // private double getCenterOfMassX(ArrayList<RotatedRect> rotatedRects) {
+    //     double mass1 = rotatedRects.get(0).size.height * rotatedRects.get(0).size.width;
+    //     double mass2 = rotatedRects.get(1).size.height * rotatedRects.get(1).size.width;
 
-        double massCenterXpx = centerOfMass(mass1, mass2, rotatedRects.get(0).center.x, rotatedRects.get(1).center.x);
-        return massCenterXpx;
-    }
+    //     double massCenterXpx = centerOfMass(mass1, mass2, rotatedRects.get(0).center.x, rotatedRects.get(1).center.x);
+    //     return massCenterXpx;
+    // }
 
-    /**
-     * Calculates the center of mass between two objects of varying pixel mass
-     */
-    private double centerOfMass(double size1, double size2, double position1, double position2) {
-        return (((size1 * position1) + (size2 * position2)) / (size1 + size2));
-    }
+    // /**
+    //  * Calculates the center of mass between two objects of varying pixel mass
+    //  */
+    // private double centerOfMass(double size1, double size2, double position1, double position2) {
+    //     return (((size1 * position1) + (size2 * position2)) / (size1 + size2));
+    // }
+
+
+    private double mLastRatio = -1;
 
     /**
      * returns the ratio of (inches / pixels) based off the of rectangle targets
@@ -224,10 +220,18 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
      * @return
      */
     private double getRatioPxToInches(ArrayList<RotatedRect> rotatedRects) {
-        double distInPx = abs(rotatedRects.get(0).center.x - rotatedRects.get(1).center.x);
+
+        double center0 = rotatedRects.get(0).center.x;
+        double center1 = rotatedRects.get(1).center.x;
+        double distInPx = abs(center0 - center1);
+        mTbl.getEntry(mId + ": Dist IN Px").setDouble(distInPx);
+        mTbl.getEntry(mId + ": center0").setDouble(center0);
+        mTbl.getEntry(mId + ": center1").setDouble(center1);
+
         double ratio = DIST_BETWEEN_TAPE_INCHES / distInPx;
         return ratio;
     }
+
 
     /**
      * This function finds the distance between the camera and the target, -
@@ -242,6 +246,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
 
         // calculate the ratio from pixels to inches
         double ratio = getRatioPxToInches(rotatedRects);
+        mTbl.getEntry("Vision Ratio").setDouble(ratio);
         // Calculate the distance from the target X horizontally
         double distanceFromTargetInches = (ratio * (CAMERA_PIXEL_WIDTH / 2))
                 / (java.lang.Math.tan(CAMERA_FOV_ANGLE_X / 2));
@@ -263,7 +268,6 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
         int targetCenter = (int) ((rotatedRects.get(0).center.x + rotatedRects.get(1).center.x) / 2);
         int distplacementX = center - targetCenter;
         double ratio = getRatioPxToInches(rotatedRects);
-
         return (distplacementX * ratio);
     }
 

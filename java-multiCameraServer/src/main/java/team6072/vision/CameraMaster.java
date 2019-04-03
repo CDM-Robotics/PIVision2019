@@ -64,7 +64,7 @@ public class CameraMaster {
     }
 
     private boolean isHaveTarget() {
-        if (cameraDatas.get(0).isHaveTarget() && cameraDatas.get(1).isHaveTarget()) {
+        if (cameraDatas.get(0).getHaveTarget() && cameraDatas.get(1).getHaveTarget()) {
             return true;
         } else {
             return false;
@@ -77,22 +77,22 @@ public class CameraMaster {
         mTable.getEntry("Error Angle").setDouble(errorAngle);
         mTable.getEntry("Error").setDouble(error);
 
-        double xCam0 = cameraDatas.get(0).getKV_X_DIST();
-        double xCam1 = cameraDatas.get(1).getKV_X_DIST();
+        double xCam0 = cameraDatas.get(0).get_X_DIST();
+        double xCam1 = cameraDatas.get(1).get_X_DIST();
         
-        mTable.getEntry("xCam0 KV_X_DIST").setDouble(xCam0);
-        mTable.getEntry("xCam1 KV_X_DIST").setDouble(xCam1);
+        mTable.getEntry("Cam0 KV_X_DIST").setDouble(xCam0);
+        mTable.getEntry("Cam1 KV_X_DIST").setDouble(xCam1);
         // System.out.printf("Cam.errAng : %.3f , Cam.errComp : %.3f \n", errorAngle,
         // error);
         return ((xCam0 + xCam1) / 2) - error;
     }
 
     private double getYDisplacement() {
-        double yCam0 = cameraDatas.get(0).getKV_Y_DIST();
-        double yCam1 = cameraDatas.get(1).getKV_Y_DIST();
+        double yCam0 = cameraDatas.get(0).get_Y_DIST();
+        double yCam1 = cameraDatas.get(1).get_Y_DIST();
         
-        mTable.getEntry("yCam0 KV_X_DIST").setDouble(yCam0);
-        mTable.getEntry("yCam1 KV_X_DIST").setDouble(yCam1);
+        mTable.getEntry("Cam0 KV_Y_DIST").setDouble(yCam0);
+        mTable.getEntry("Cam1 KV_Y_DIST").setDouble(yCam1);
         return ((yCam0 + yCam1) / 2);
     }
 

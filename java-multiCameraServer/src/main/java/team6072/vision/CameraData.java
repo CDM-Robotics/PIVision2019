@@ -15,24 +15,24 @@ public class CameraData{
         CameraMaster.getInstance().addCameraData(this);
     }
 
-    public void updateData(double KV_X_DIST, double KV_Y_DIST, boolean HaveVision){
-        mXDistInches = KV_X_DIST;
-        mYDistInches = KV_Y_DIST;
+    public void updateData(double x_dist, double y_dist, boolean HaveVision){
+        mXDistInches = x_dist;
+        mYDistInches = y_dist;
         mHaveTarget = HaveVision;
     }
 
-    public void updateData(boolean HaveTarget){
-        mHaveTarget = HaveTarget;
+    public void setHaveTarget(boolean haveTarget){
+        mHaveTarget = haveTarget;
     }
 
-    public boolean isHaveTarget(){
+    public boolean getHaveTarget(){
         return mHaveTarget;
     }
 
-    public double getKV_X_DIST(){
+    public double get_X_DIST(){
         return mXDistInches;
     }
-    public double getKV_Y_DIST(){
+    public double get_Y_DIST(){
         return mYDistInches;
     }
 }

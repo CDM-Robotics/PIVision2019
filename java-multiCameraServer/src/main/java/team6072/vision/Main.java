@@ -126,7 +126,7 @@ public final class Main {
 
         for(int i = 0; i < cameras.size(); i++){
             VisionThread visionThread = new VisionThread(cameras.get(i), new CloseUpPipeline(),
-            new CloseUpPipelineListener());
+            new CloseUpPipelineListener(i + ""));
             visionThread.start();
         }
 
