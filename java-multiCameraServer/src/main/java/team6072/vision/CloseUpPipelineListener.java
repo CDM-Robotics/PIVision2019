@@ -159,11 +159,13 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
             RotatedRect rect2 = rotatedRects.get(1);
             for (int i = 0; i < rotatedRects.size(); i++) {
                 RotatedRect tempRect = rotatedRects.get(i);
-                if (tempRect.size.area() > rect1.size.area()) {
-                    rect2 = rect1;
-                    rect1 = tempRect;
-                } else if (tempRect.size.area() > rect2.size.area()) {
-                    rect2 = tempRect;
+                if(tempRect.size.area() != rect1.size.area()){
+                    if (tempRect.size.area() > rect1.size.area()) {
+                        rect2 = rect1;
+                        rect1 = tempRect;
+                    } else if (tempRect.size.area() > rect2.size.area()) {
+                        rect2 = tempRect;
+                    }
                 }
             }
             tempRotatedRects.add(rect1);
