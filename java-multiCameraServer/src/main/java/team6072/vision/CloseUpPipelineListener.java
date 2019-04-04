@@ -149,27 +149,28 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
      * 
      * @param rotatedRects - an array list of the RotatedRectangles directly from
      *                     the camera's contour output
-     * @return - an array list of Rotated Rectangles
+     * @return - an array list the two largest rectangles in list sorted by size
      */
     private ArrayList<RotatedRect> orderFilterRectangles(ArrayList<RotatedRect> rotatedRects) {
         if (rotatedRects.size() >= 2) {
             ArrayList<RotatedRect> tempRotatedRects = new ArrayList<RotatedRect>();
 
-            RotatedRect rect1 = rotatedRects.get(0);
-            RotatedRect rect2 = rotatedRects.get(1);
+            RotatedRect rectBig1 = rotatedRects.get(0);
+            RotatedRect rectBig2 = rotatedRects.get(1);
             for (int i = 0; i < rotatedRects.size(); i++) {
                 RotatedRect tempRect = rotatedRects.get(i);
-                if(tempRect.size.area() != rect1.size.area()){
-                    if (tempRect.size.area() > rect1.size.area()) {
-                        rect2 = rect1;
-                        rect1 = tempRect;
-                    } else if (tempRect.size.area() > rect2.size.area()) {
-                        rect2 = tempRect;
+                if (tempRect.size.area() != rectBig1.size.area()){
+                    if (tempRect.size.area() > rectBig1.size.area()) {
+                        // rectangle is larger than Big1
+                        rectBig2 = rectBig1;        // move Big1 to Big2
+                        rectBig1 = tempRect;        // move current to Big1
+                    } else if (tempRect.size.area() > rectBig2.size.area()) {
+                        rectBig2 = tempRect;
                     }
                 }
             }
-            tempRotatedRects.add(rect1);
-            tempRotatedRects.add(rect2);
+            tempRotatedRects.add(rectBig1);
+            tempRotatedRects.add(rectBig2);
             return tempRotatedRects;
         }
         return null;
