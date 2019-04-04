@@ -249,7 +249,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
 
         // calculate the ratio from pixels to inches
         double ratio = getRatioPxToInches(rotatedRects);
-        mTbl.getEntry("Vision Ratio").setDouble(ratio);
+        mTbl.getEntry(mId + "Vision Ratio").setDouble(ratio);
         // Calculate the distance from the target X horizontally
         double distanceFromTargetInches = (ratio * (CAMERA_PIXEL_WIDTH / 2))
                 / (java.lang.Math.tan(CAMERA_FOV_ANGLE_X / 2));
