@@ -97,7 +97,7 @@ public class CloseUpPipelineListener implements VisionRunner.Listener<CloseUpPip
 
                 if (rotatedRects != null && rotatedRects.size() >= 2) {
                     // orders the rectangles
-                    rotatedRects = orderFilterRectangles(rotatedRects);
+                    // rotatedRects = orderFilterRectangles(rotatedRects);
 
                     double xDistFromCenter = getDistFromCenterInches(rotatedRects);
                     double yDistInches = getDistanceFromTargetInches(rotatedRects);
